@@ -12,7 +12,7 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import React, { useEffect, useState, useRef } from "react";
-import { getAllCategory } from "../../api/category";
+import { getAllCategory, editCategory } from "@/api/category";
 import Table from "@/components/base/Table";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
@@ -22,8 +22,11 @@ const { Option } = Select;
 interface DataType {
   id: string;
   title: string;
+  alias: string;
+  name: string;
   description: number;
   img: string;
+  cate_id: number;
 }
 
 const data: DataType[] = [];
@@ -98,18 +101,9 @@ const Category = () => {
   const [modalState, setModalState] = useState({
     open: false,
   });
+  const [oldData, setOldData] = useState({});
   const [form] = Form.useForm();
 
-  const onGenderChange = (value: string | number) => {
-    console.log("switch", value);
-    switch (value) {
-      case "male":
-        return;
-      case 18:
-        return;
-      case "other":
-    }
-  };
   const uploadChange = (fileList: UploadFile[]) => {
     if (!fileList || fileList.length === 0) {
       return;
@@ -122,10 +116,20 @@ const Category = () => {
     <BaseUpload
       multiple={true}
       fileList={fileList}
-      // value={fileList}
       onChange={uploadChange}
       maxCount={2}
     />
+  );
+  const select = (
+    <Select placeholder="请选择所属分类" allowClear>
+      {cateList.map((item: any) => {
+        return (
+          <Option value={item.id} key={item.id}>
+            {item.name}
+          </Option>
+        );
+      })}
+    </Select>
   );
   const [formFields, setFormFields] = useState([
     {
@@ -146,50 +150,43 @@ const Category = () => {
       attrs: {
         rules: [{ required: true, message: "请选择所属分类!" }],
       },
-      component: null,
+      // component: null,
+      component: select,
     },
     {
       label: "缩略图",
       name: "img",
-      // attrs: {
-      //   rules: [{ message: "请上传缩略图!" }],
-      // },
-      component: null,
+      attrs: {
+        rules: [{ message: "请上传缩略图!" }],
+      },
+      // component: null,
+      component: upload,
     },
   ]);
-  const field2 = {
-    label: "a",
-    name: "a",
-    attrs: { rules: [{ required: true, message: "请输入a!" }] },
-    component: <Input allowClear placeholder="请输入姓名2" />,
-  };
-
-  const select = (
-    <Select placeholder="请选择所属分类" onChange={onGenderChange} allowClear>
-      {cateList.map((item: any) => {
-        return (
-          <Option value={item.id} key={item.id}>
-            {item.name}
-          </Option>
-        );
-      })}
-    </Select>
-  );
-  useEffect(() => {
-    formFields[2].component = select;
-    formFields[3].component = upload;
-    setFormFields([...formFields]);
-  }, [modalState.open, fileList]);
-
-  const deleteCol = (record: DataType) => {
-    console.log("deleteCol", record);
-  };
-
   const openModal = (record: DataType) => {
     console.log("openModal", record);
     setModalState({
       open: true,
     });
+    form.setFieldsValue({
+      name: record.name,
+      alias: record.alias,
+      cate_id: record.cate_id,
+      img: record.img,
+    });
+    setOldData({
+      id: record.id,
+    })
+  };
+  useEffect(() => {
+    formFields[2].component = select;
+    // formFields[3].component = upload;
+    setFormFields([...formFields]);
+    // }, [modalState.open, fileList]);
+  }, [cateList]);
+
+  const deleteCol = (record: DataType) => {
+    console.log("deleteCol", record);
   };
 
   const layout = {
@@ -200,7 +197,12 @@ const Category = () => {
     wrapperCol: { offset: 6, span: 16 },
   };
   const onOk = async () => {
-    const res = await form.validateFields();
+    const validated = await form.validateFields();
+    console.log("onFinish validated", validated);
+    console.log("onFinish form", );
+    
+    const res = await editCategory({...oldData,...validated});
+    if(res.status < 1){}
     console.log("onFinish res", res);
   };
   const onCancel = (a: any) => {
