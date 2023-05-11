@@ -1,0 +1,16 @@
+.login-wrap{
+  width: 600px;
+  height: 260px;
+  margin: auto;
+  padding: 60px 30px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  background-color: rgb(66 107 165);
+  .ant-form-item-label>label{
+    color: #fff;
+  }
+}
