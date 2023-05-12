@@ -1,0 +1,10 @@
+.loading-wrap{
+  display: flex;
+  min-height: 200px;
+  justify-content: center;
+  align-items: center;
+  .anticon-loading{
+    font-size: 40px;
+    color: #87a8ff;
+  }
+}

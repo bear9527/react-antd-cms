@@ -32,9 +32,7 @@ const BaseUpload: FC<Props> = (props) => {
 
   const [stateFileList, setStateFileList] = useState<UploadFile[]>(
     fileList.length ? [...fileList] : []
-    // []
   );
-  console.log("stateFileList", fileList);
 
   const uploadButton = loading ? <LoadingOutlined /> : <PlusOutlined />;
 
@@ -54,7 +52,6 @@ const BaseUpload: FC<Props> = (props) => {
   const onStart = (file: any): void => {
     console.log("onStart", file);
     setLoading(true);
-    // onChange && onChange(undefined)
   };
 
   const onError = (): void => {};

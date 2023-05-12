@@ -1,22 +1,18 @@
 import {
   Space,
-  Upload,
-  Switch,
   Form,
   Input,
   Select,
-  Modal,
   UploadFile,
-  UploadProps,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import { getAllCategory, editCategory } from "@/api/category";
 import Table from "@/components/base/Table";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
+import "./Category.scss";
 const { Option } = Select;
 
 interface DataType {
@@ -29,10 +25,11 @@ interface DataType {
   cate_id: number;
 }
 
-const data: DataType[] = [];
 const Category = () => {
   // 表格逻辑开始
-  const [cateList, setCateList] = useState([]);
+  const [cateState, setCateState]: any = useState({
+    list: [],
+  });
 
   // 表格列
   const columns: ColumnsType<DataType> = [
@@ -46,6 +43,11 @@ const Category = () => {
       title: "title",
       dataIndex: "name",
       key: "name",
+    },
+    {
+      title: "父分类ID",
+      dataIndex: "cate_id",
+      key: "cate_id",
     },
     {
       title: "description",
@@ -76,9 +78,10 @@ const Category = () => {
   const getDate = async () => {
     try {
       const res = await getAllCategory();
-      console.log("getAllCategory", res.data);
-      if (!res.status) {
-        setCateList(res.data);
+      if (res.data) {
+        cateState.list = [...res.data];
+        setCateState({ list: [...cateState.list] });
+        console.log("setCateList", cateState);
       }
     } catch (error) {}
   };
@@ -90,16 +93,10 @@ const Category = () => {
   // 表格逻辑结束
 
   // 表单逻辑开始
-  const [fileList, setFileList] = useState<UploadFile[]>([
-    {
-      uid: "-1",
-      name: "xxx.png",
-      status: "done",
-      url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-    },
-  ]);
+  const [fileListState, setFileListState] = useState<UploadFile[]>([]);
   const [modalState, setModalState] = useState({
     open: false,
+    loading: false,
   });
   const [oldData, setOldData] = useState({});
   const [form] = Form.useForm();
@@ -112,25 +109,7 @@ const Category = () => {
       img: fileList.map((item) => (item.url ? item.url : item.response.url))[0],
     });
   };
-  const upload = (
-    <BaseUpload
-      multiple={true}
-      fileList={fileList}
-      onChange={uploadChange}
-      maxCount={2}
-    />
-  );
-  const select = (
-    <Select placeholder="请选择所属分类" allowClear>
-      {cateList.map((item: any) => {
-        return (
-          <Option value={item.id} key={item.id}>
-            {item.name}
-          </Option>
-        );
-      })}
-    </Select>
-  );
+
   const [formFields, setFormFields] = useState([
     {
       label: "标题",
@@ -150,8 +129,19 @@ const Category = () => {
       attrs: {
         rules: [{ required: true, message: "请选择所属分类!" }],
       },
-      // component: null,
-      component: select,
+      component: () => {
+        return (
+          <Select placeholder="请选择所属分类" allowClear>
+            {cateState.list.map((item: any) => {
+              return (
+                <Option value={item.id + ""} key={item.id}>
+                  {item.name}
+                </Option>
+              );
+            })}
+          </Select>
+        );
+      },
     },
     {
       label: "缩略图",
@@ -159,31 +149,55 @@ const Category = () => {
       attrs: {
         rules: [{ message: "请上传缩略图!" }],
       },
-      // component: null,
-      component: upload,
+      shouldUpdate: true,
+      component: () => {
+        console.log("upload fileList", fileListState);
+        return (
+          <BaseUpload
+            multiple={true}
+            fileList={infoRef.current}
+            onChange={uploadChange}
+          />
+        );
+      },
     },
   ]);
-  const openModal = (record: DataType) => {
-    console.log("openModal", record);
+
+  const infoRef: any = useRef();
+  useEffect(() => {
+    infoRef.current = fileListState;
+  }, [fileListState]);
+
+  const openModal = async (record: DataType) => {
+    setFileListState([]);
+    record.img &&
+      fileListState.splice(0, 1, {
+        uid: "-1",
+        name: "xxx",
+        status: "done",
+        url: record.img,
+      });
+    setFileListState([...fileListState]);
     setModalState({
       open: true,
-    });
-    form.setFieldsValue({
-      name: record.name,
-      alias: record.alias,
-      cate_id: record.cate_id,
-      img: record.img,
+      loading: true,
     });
     setOldData({
       id: record.id,
-    })
+    });
+    setTimeout(() => {
+      setModalState({
+        open: true,
+        loading: false,
+      });
+      form.setFieldsValue({
+        name: record.name,
+        alias: record.alias,
+        cate_id: record.cate_id,
+        img: record.img,
+      });
+    });
   };
-  useEffect(() => {
-    formFields[2].component = select;
-    // formFields[3].component = upload;
-    setFormFields([...formFields]);
-    // }, [modalState.open, fileList]);
-  }, [cateList]);
 
   const deleteCol = (record: DataType) => {
     console.log("deleteCol", record);
@@ -196,38 +210,34 @@ const Category = () => {
   const tailLayout = {
     wrapperCol: { offset: 6, span: 16 },
   };
-  const onOk = async () => {
-    const validated = await form.validateFields();
-    console.log("onFinish validated", validated);
-    console.log("onFinish form", );
-    
-    const res = await editCategory({...oldData,...validated});
-    if(res.status < 1){}
-    console.log("onFinish res", res);
-  };
-  const onCancel = (a: any) => {
-    // onReset()
-    console.log("a", a);
+  const onCancel = () => {
+    onReset();
     setModalState({
       open: false,
+      loading: true,
     });
   };
 
+  const onOk = async () => {
+    const validated = await form.validateFields();
+
+    const res = await editCategory({ ...oldData, ...validated });
+    if (res.status > 0) {
+      return;
+    }
+    console.log("onFinish res", res);
+    onCancel();
+
+    getDate();
+  };
   const onReset = () => {
     form.resetFields();
-  };
-
-  const onFill = () => {
-    form.setFieldsValue({
-      note: "Hello world!",
-      gender: "male",
-    });
   };
 
   return (
     <>
       <Table<DataType>
-        dataSource={cateList}
+        dataSource={cateState.list}
         columns={columns}
         rowKey={(record) => record.id}
         height="100%"
@@ -241,17 +251,20 @@ const Category = () => {
         cancelText="Cancel"
         okText="Confim"
       >
-        <BaseForm
-          form={form}
-          fields={formFields}
-          tailLayout={tailLayout}
-          formAttrs={{
-            // ref: formRef,
-            form,
-            ...layout,
-            name: "control-hooks",
-          }}
-        ></BaseForm>
+        {
+          <BaseForm
+            form={form}
+            fields={formFields}
+            loading={modalState.loading}
+            tailLayout={tailLayout}
+            formAttrs={{
+              // ref: formRef,
+              form,
+              ...layout,
+              name: "control-hooks",
+            }}
+          ></BaseForm>
+        }
       </BaseModal>
     </>
   );
