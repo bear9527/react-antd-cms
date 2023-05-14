@@ -6,9 +6,9 @@ import {
   UploadFile,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
-import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getAllCategory, editCategory } from "@/api/category";
-import Table from "@/components/base/Table";
+import Table from "@/components/base/BaseTable";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
@@ -83,7 +83,7 @@ const Category = () => {
         setCateState({ list: [...cateState.list] });
         console.log("setCateList", cateState);
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -94,19 +94,23 @@ const Category = () => {
 
   // 表单逻辑开始
   const [fileListState, setFileListState] = useState<UploadFile[]>([]);
-  const [modalState, setModalState] = useState({
+  const [modalState, setModalState] = useState<any>({
+    id: undefined,
     open: false,
     loading: false,
   });
-  const [oldData, setOldData] = useState({});
   const [form] = Form.useForm();
 
   const uploadChange = (fileList: UploadFile[]) => {
     if (!fileList || fileList.length === 0) {
+      form.setFieldsValue({
+        img: ''
+      });
       return;
     }
+    const arr = fileList.map((item) => (item.url ? item.url : item.response.url))[0]
     form.setFieldsValue({
-      img: fileList.map((item) => (item.url ? item.url : item.response.url))[0],
+      img: arr
     });
   };
 
@@ -134,7 +138,7 @@ const Category = () => {
           <Select placeholder="请选择所属分类" allowClear>
             {cateState.list.map((item: any) => {
               return (
-                <Option value={item.id + ""} key={item.id}>
+                <Option value={item.id} key={item.id}>
                   {item.name}
                 </Option>
               );
@@ -146,9 +150,9 @@ const Category = () => {
     {
       label: "缩略图",
       name: "img",
-      attrs: {
-        rules: [{ message: "请上传缩略图!" }],
-      },
+      // attrs: {
+      //   rules: [{ message: "请上传缩略图!" }],
+      // },
       shouldUpdate: true,
       component: () => {
         console.log("upload fileList", fileListState);
@@ -169,9 +173,10 @@ const Category = () => {
   }, [fileListState]);
 
   const openModal = async (record: DataType) => {
-    setFileListState([]);
+    // setFileListState([]);
+    fileListState.splice(0, fileListState.length)
     record.img &&
-      fileListState.splice(0, 1, {
+      fileListState.push({
         uid: "-1",
         name: "xxx",
         status: "done",
@@ -181,22 +186,20 @@ const Category = () => {
     setModalState({
       open: true,
       loading: true,
-    });
-    setOldData({
       id: record.id,
     });
-    setTimeout(() => {
-      setModalState({
-        open: true,
-        loading: false,
-      });
-      form.setFieldsValue({
-        name: record.name,
-        alias: record.alias,
-        cate_id: record.cate_id,
-        img: record.img,
-      });
+    await setTimeout(() => { });
+    setModalState({
+      open: true,
+      loading: false,
     });
+    form.setFieldsValue({
+      name: record.name,
+      alias: record.alias,
+      cate_id: record.cate_id,
+      img: record.img,
+    });
+
   };
 
   const deleteCol = (record: DataType) => {
@@ -221,7 +224,7 @@ const Category = () => {
   const onOk = async () => {
     const validated = await form.validateFields();
 
-    const res = await editCategory({ ...oldData, ...validated });
+    const res = await editCategory({ id: modalState.id, ...validated });
     if (res.status > 0) {
       return;
     }
