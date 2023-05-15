@@ -1,9 +1,9 @@
 
 /** @jsxImportSource @emotion/react */
-import { Table, Button, Space } from "antd";
-import type { TableProps } from "antd/es/table";
 import { css } from "@emotion/react";
 
+import { Table, Button, Space } from "antd";
+import type { TableProps } from "antd/es/table";
 interface MyTableProps<T extends object> extends TableProps<T> {
   height?: string;
 }

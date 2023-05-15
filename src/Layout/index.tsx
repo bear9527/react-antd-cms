@@ -77,7 +77,7 @@ const App: React.FC = () => {
           <MyHeader />
         </Header>
         <Content style={{ margin: "0 16px" }}>
-          <CustomBreadcrumb activeRoute={activeRoute} />
+          {/* <CustomBreadcrumb activeRoute={activeRoute} /> */}
           <div
             className="site-layout-background"
             style={{ padding: 24, minHeight: 360 }}
@@ -86,7 +86,7 @@ const App: React.FC = () => {
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©2018 Created by Ant UED
+          Ant Design ©2023 Created by bear9527 UED
         </Footer>
       </Layout>
     </Layout>

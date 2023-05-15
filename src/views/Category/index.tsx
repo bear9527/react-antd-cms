@@ -1,10 +1,4 @@
-import {
-  Space,
-  Form,
-  Input,
-  Select,
-  UploadFile,
-} from "antd";
+import { Space, Form, Input, Select, UploadFile } from "antd";
 import { ColumnsType } from "antd/es/table";
 import React, { useEffect, useState, useRef } from "react";
 import { getAllCategory, editCategory } from "@/api/category";
@@ -13,6 +7,7 @@ import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
 import "./Category.scss";
+import BaseTitle from "@/components/base/BaseTitle";
 const { Option } = Select;
 
 interface DataType {
@@ -83,7 +78,7 @@ const Category = () => {
         setCateState({ list: [...cateState.list] });
         console.log("setCateList", cateState);
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -104,13 +99,15 @@ const Category = () => {
   const uploadChange = (fileList: UploadFile[]) => {
     if (!fileList || fileList.length === 0) {
       form.setFieldsValue({
-        img: ''
+        img: "",
       });
       return;
     }
-    const arr = fileList.map((item) => (item.url ? item.url : item.response.url))[0]
+    const arr = fileList.map((item) =>
+      item.url ? item.url : item.response.url
+    )[0];
     form.setFieldsValue({
-      img: arr
+      img: arr,
     });
   };
 
@@ -173,8 +170,7 @@ const Category = () => {
   }, [fileListState]);
 
   const openModal = async (record: DataType) => {
-    // setFileListState([]);
-    fileListState.splice(0, fileListState.length)
+    fileListState.splice(0, fileListState.length);
     record.img &&
       fileListState.push({
         uid: "-1",
@@ -186,10 +182,12 @@ const Category = () => {
     setModalState({
       open: true,
       loading: true,
-      id: record.id,
     });
-    await setTimeout(() => { });
+    modalState.id = record.id;
+    await setTimeout(() => {}); // 延迟赋值
+
     setModalState({
+      ...modalState,
       open: true,
       loading: false,
     });
@@ -199,7 +197,6 @@ const Category = () => {
       cate_id: record.cate_id,
       img: record.img,
     });
-
   };
 
   const deleteCol = (record: DataType) => {
@@ -223,8 +220,9 @@ const Category = () => {
 
   const onOk = async () => {
     const validated = await form.validateFields();
+    console.log("modalState", modalState);
 
-    const res = await editCategory({ id: modalState.id, ...validated });
+    const res = await editCategory({ ...validated, id: modalState.id });
     if (res.status > 0) {
       return;
     }
@@ -239,6 +237,7 @@ const Category = () => {
 
   return (
     <>
+      <BaseTitle title="分类" />
       <Table<DataType>
         dataSource={cateState.list}
         columns={columns}
@@ -246,7 +245,7 @@ const Category = () => {
         height="100%"
       />
       <BaseModal
-        title="编辑分类"
+        title={modalState.id ? "编辑分类" : "新增分类"}
         width={800}
         open={modalState.open}
         onOk={onOk}
