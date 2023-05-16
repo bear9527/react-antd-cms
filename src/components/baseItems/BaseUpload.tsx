@@ -33,7 +33,9 @@ const BaseUpload: FC<Props> = (props) => {
   const [stateFileList, setStateFileList] = useState<UploadFile[]>(
     fileList.length ? [...fileList] : []
   );
-
+  useEffect(()=>{
+    setStateFileList([...fileList])
+  }, [fileList])
   const uploadButton = loading ? <LoadingOutlined /> : <PlusOutlined />;
 
   const _onChange = (a: any): void => {

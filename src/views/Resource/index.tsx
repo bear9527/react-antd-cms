@@ -21,7 +21,7 @@ import BaseTable from "@/components/base/BaseTable";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
-import "./Category.scss";
+import "./Resource.scss";
 import BaseTitle from "@/components/base/BaseTitle";
 const { Option } = Select;
 
@@ -35,7 +35,7 @@ interface DataType {
   cate_id: number;
 }
 
-const Category = () => {
+const Resource = () => {
   // 表格逻辑开始
   const [cateState, setCateState]: any = useState({
     list: [],
@@ -305,7 +305,7 @@ const Category = () => {
   };
   return (
     <>
-      <BaseTitle title="分类">
+      <BaseTitle title="资源分类">
         <Button type="primary" ghost onClick={() => openModal()}>
           add
         </Button>
@@ -357,4 +357,5 @@ const Category = () => {
     </>
   );
 };
-export default Category;
+
+export default Resource;

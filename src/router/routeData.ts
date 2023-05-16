@@ -50,11 +50,11 @@ const router = [
         }
       },
       {
-        title: 'about',
+        title: 'resource',
         icon: '',
-        path: '/about',
-        key: 'about',
-        component: lazy(() => import('../views/About'))
+        path: '/resource',
+        key: 'resource',
+        component: lazy(() => import('../views/Resource'))
       },   
       {
         title: 'category',

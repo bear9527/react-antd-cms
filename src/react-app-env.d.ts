@@ -77,3 +77,9 @@ declare module '*.module.sass' {
 }
 
 type CommonObjectType<T = any> = Record<string, T>
+
+interface ResponseDate {
+  status: number,
+  date: any
+}
+type Popconfirm = any

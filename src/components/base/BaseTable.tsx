@@ -10,7 +10,8 @@ interface MyTableProps<T extends object> extends TableProps<T> {
 
 const MyTable = <T extends object = object>(props: MyTableProps<T>) => {
   const { height, pagination, ...rest } = props;
-
+  console.log('props',props);
+  
   const defaultPagination = {
     size: "default",
     showQuickJumper: true,
@@ -26,11 +27,8 @@ const MyTable = <T extends object = object>(props: MyTableProps<T>) => {
 
   return (
     <div style={{ height }} css={styles}>
-      <div className="btn-wrapper">
-        <Space size={'small'}>
-          <Button type="primary">Primary Button</Button>
-          <Button type="primary">Primary Button</Button>
-        </Space>
+      <div className="customer-wrapper">
+        {props.children}
       </div>
       <Table<T> {...rest} pagination={combinedPagination} />
     </div>
@@ -40,9 +38,11 @@ const MyTable = <T extends object = object>(props: MyTableProps<T>) => {
 export default MyTable;
 
 const styles = css`
-  .btn-wrapper{
+  .customer-wrapper{
     padding-bottom: 24px;
   }
+  padding: 24px;
+  background-color: #fff;
   // display: flex;
   // flex-direction: column;
   // overflow: hidden;

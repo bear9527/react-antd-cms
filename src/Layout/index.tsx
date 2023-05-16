@@ -1,11 +1,16 @@
-import Icon from "@ant-design/icons";
+// import Icon from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuDate } from "./MenuDate";
-import { Outlet, useNavigate, useLocation, useOutletContext } from "react-router-dom";
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+  useOutletContext,
+} from "react-router-dom";
 import SvgIcon from "../components/SvgIcon";
-import logo from "../assets/icons/img/logo.png"
+import logo from "../assets/icons/img/logo.png";
 import MyHeader from "./Header";
 import CustomBreadcrumb from "./CustomBreadcrumb";
 import routeData from "../router/routeData";
@@ -30,10 +35,18 @@ function getItem(
 
 const items: MenuItem[] = [
   ...MenuDate.map((item: any) => {
-    return getItem(item.title, item.key, item.icon ? <SvgIcon iconName={item.icon}/> : null, 
-    item?.children && item?.children.map((itemChildren: any) => {
-        return getItem(itemChildren.title, itemChildren.key, item.icon ? <SvgIcon iconName={item.icon} /> : null);
-      }),
+    return getItem(
+      item.title,
+      item.key,
+      item.icon ? <SvgIcon iconName={item.icon} /> : null,
+      item?.children &&
+        item?.children.map((itemChildren: any) => {
+          return getItem(
+            itemChildren.title,
+            itemChildren.key,
+            itemChildren.icon ? <SvgIcon iconName={itemChildren.icon} /> : null
+          );
+        })
     );
   }),
 ];
@@ -41,18 +54,24 @@ const items: MenuItem[] = [
 type ContextType = { activeRoute: any | null };
 
 const App: React.FC = () => {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [activeRoute, setActiveRoute] = useState(deepQuery(routeData, pathname, "path"));
+  const [activeRoute, setActiveRoute] = useState(
+    deepQuery(routeData, pathname, "path")
+  );
   const navgate = useNavigate();
+
   const menuSelect = (a: any) => {
+    console.log("a,key", a);
+
     navgate(a.key);
 
-    setActiveRoute(deepQuery(routeData, a.key, "key"))
+    setActiveRoute(deepQuery(routeData, a.key, "key"));
   };
 
-
-    
+  useEffect(() => {
+    console.log("pathname", pathname);
+  }, []);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -66,23 +85,20 @@ const App: React.FC = () => {
         </div>
         <Menu
           theme="dark"
-          defaultSelectedKeys={["1"]}
+          defaultSelectedKeys={[pathname.substring(1)]}
           mode="inline"
           items={items}
           onSelect={menuSelect}
         />
       </Sider>
       <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 16 }} >
+        <Header className="site-layout-background" style={{ padding: 16 }}>
           <MyHeader />
         </Header>
         <Content style={{ margin: "0 16px" }}>
           {/* <CustomBreadcrumb activeRoute={activeRoute} /> */}
-          <div
-            className="site-layout-background"
-            style={{ padding: 24, minHeight: 360 }}
-          >
-            <Outlet context={{activeRoute}}/>
+          <div className="site-layout-background" style={{ minHeight: 360 }}>
+            <Outlet context={{ activeRoute }} />
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>

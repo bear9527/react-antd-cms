@@ -1,4 +1,3 @@
-
 export const MenuDate = [
   {
     key: "dashboard",
@@ -7,13 +6,13 @@ export const MenuDate = [
     path: "/dashboard",
     permission: "dashboard",
   },
-  {
-    key: "home",
-    title: "首页",
-    icon: 'site',
-    path: "/home",
-    permission: "home",
-  },
+  // {
+  //   key: "home",
+  //   title: "首页",
+  //   icon: 'site',
+  //   path: "/home",
+  //   permission: "home",
+  // },
   {
     key: "category",
     title: "分类",
@@ -21,22 +20,31 @@ export const MenuDate = [
     path: "/category",
     permission: "category",
   },
+    {
+    key: "resource",
+    title: "分类资源",
+    icon: 'resource',
+    path: "/resource",
+    permission: "resource",
+  },
   {
-    key: "about",
-    title: "关于",
+    key: "system",
+    title: "系统",
     icon: 'system',
-    path: "/about",
-    permission: "about",
+    path: "/system",
+    permission: "system",
     children: [
       {
         key: "user",
         title: "用户",
+        icon: 'meitiku',
         path: "/user",
         permission: "user-management",
       },
       {
         key: "role",
         title: "角色",
+        icon: 'meitiku',
         path: "/role",
         permission: "role-management",
       }

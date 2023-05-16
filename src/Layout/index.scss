@@ -1,4 +1,9 @@
-.my-header{
-  line-height: 26px;
-  text-align: right;
+
+.ant-layout-header{
+  background-color: transparent;
+  .my-header{
+    line-height: 26px;
+    text-align: right;
+  }
+  
 }
