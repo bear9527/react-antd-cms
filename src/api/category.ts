@@ -3,10 +3,11 @@ export interface ILoginInfo {
   username: string;
   passwrod: string;
 }
-export function getAllCategory() {
+export function getAllCategory(params = {}) {
   return request({
     url: `/article/getAllCategory`,
     method: "get",
+    params: params,
   });
 }
 

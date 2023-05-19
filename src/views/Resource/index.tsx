@@ -23,7 +23,8 @@ import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
 import "./Resource.scss";
 import BaseTitle from "@/components/base/BaseTitle";
-const { Option } = Select;
+import { useDispatch, useSelector } from "react-redux";
+import { getTopCateList } from "../../store/modules/categoryStore";
 
 interface DataType {
   id: string;
@@ -53,11 +54,6 @@ const Resource = () => {
       title: "title",
       dataIndex: "title",
       key: "title",
-    },
-    {
-      title: "父分类ID",
-      dataIndex: "cate_id",
-      key: "cate_id",
     },
     {
       title: "description",
@@ -92,9 +88,13 @@ const Resource = () => {
       ),
     },
   ];
+
+
   const getDate = async () => {
     try {
-      const res = await getAllCategory();
+      const res = await getAllCategory({
+        cate_id: 0
+      });
       if (res.data) {
         cateState.list = [...res.data];
         setCateState({ list: [...cateState.list] });
@@ -102,10 +102,19 @@ const Resource = () => {
       }
     } catch (error) {}
   };
+  const { categoryList } = useSelector((state: any) => state.categoryStore);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    getDate();
-  }, []);
+    // getDate();
+    dispatch(getTopCateList() as any)
+    console.log('categoryList',categoryList);
+    setCateState({ list: [...categoryList] });
+  }, [dispatch]);
+  // const getCateListHandler = () => {
+  //   dispatch(getTopCateList());
+  // };
+
 
   // 表格逻辑结束
 
@@ -145,26 +154,6 @@ const Resource = () => {
       name: "alias",
       attrs: { rules: [{ required: true, message: "请输入!" }] },
       component: <Input allowClear placeholder="请输入描述" />,
-    },
-    {
-      label: "所属分类",
-      name: "cate_id",
-      attrs: {
-        rules: [{ required: true, message: "请选择所属分类!" }],
-      },
-      component: () => {
-        return (
-          <Select placeholder="请选择所属分类" allowClear>
-            {cateState.list.map((item: any) => {
-              return (
-                <Option value={item.id} key={item.id}>
-                  {item.title}
-                </Option>
-              );
-            })}
-          </Select>
-        );
-      },
     },
     {
       label: "缩略图",
@@ -231,7 +220,7 @@ const Resource = () => {
     form.setFieldsValue({
       title: record.title,
       alias: record.alias,
-      cate_id: record.cate_id,
+      cate_id: 0,
       img: record.img,
     });
   };
@@ -261,7 +250,7 @@ const Resource = () => {
     } else {
       console.log("onFinish res", res);
       onCancel();
-      getDate();
+      // getDate();
     }
   };
   const onReset = () => {
@@ -274,7 +263,7 @@ const Resource = () => {
     } else {
       message.success("delete succss");
 
-      getDate();
+      // getDate();
     }
   };
   const batchDelete = async () => {
@@ -283,7 +272,7 @@ const Resource = () => {
       return;
     } else {
       message.success(res.message);
-      getDate();
+      // getDate();
     }
   };
   // rowSelection object indicates the need for row selection
@@ -306,6 +295,7 @@ const Resource = () => {
   return (
     <>
       <BaseTitle title="资源分类">
+        {/* <button onClick={()=>clickHandler()}></button> */}
         <Button type="primary" ghost onClick={() => openModal()}>
           add
         </Button>
