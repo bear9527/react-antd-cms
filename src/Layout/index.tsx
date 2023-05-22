@@ -1,8 +1,9 @@
 // import Icon from "@ant-design/icons";
+import store from "../store";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
 import React, { useEffect, useState } from "react";
-import { MenuDate } from "./MenuDate";
+import { MenuData } from "./MenuData";
 import {
   Outlet,
   useNavigate,
@@ -15,6 +16,8 @@ import MyHeader from "./Header";
 import CustomBreadcrumb from "./CustomBreadcrumb";
 import routeData from "../router/routeData";
 import { deepQuery } from "../utils/tool";
+import { useDispatch, useSelector } from "react-redux";
+import { getTopCateList } from "@/store/modules/categoryStore";
 const { Header, Content, Footer, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -32,28 +35,71 @@ function getItem(
     label,
   } as MenuItem;
 }
+console.log("MenuData", MenuData);
 
-const items: MenuItem[] = [
-  ...MenuDate.map((item: any) => {
-    return getItem(
-      item.title,
-      item.key,
-      item.icon ? <SvgIcon iconName={item.icon} /> : null,
-      item?.children &&
-        item?.children.map((itemChildren: any) => {
-          return getItem(
-            itemChildren.title,
-            itemChildren.key,
-            itemChildren.icon ? <SvgIcon iconName={itemChildren.icon} /> : null
-          );
-        })
-    );
-  }),
-];
+// items = itemsFn()
+
+// store.subscribe(() => {
+//   console.log('MenuData()',MenuData());
+
+// items = itemsFn()
+// });
 
 type ContextType = { activeRoute: any | null };
 
 const App: React.FC = () => {
+  const dispatch = useDispatch();
+
+  // 从store中获取list数据
+  const { categoryList } = useSelector((state: any) => state.categoryStore);
+
+  useEffect(() => {
+    dispatch(getTopCateList() as any);
+  }, [dispatch]);
+
+  const menuFn = (MenuList: MenuItem[]) => [
+    ...MenuList.map((item: any) => {
+      return getItem(
+        item.title,
+        item.key,
+        item.icon ? <SvgIcon iconName={item.icon} /> : null,
+        item?.children &&
+          item?.children.map((itemChildren: any) => {
+            return getItem(
+              itemChildren.title,
+              itemChildren.key,
+              itemChildren.icon ? (
+                <SvgIcon iconName={itemChildren.icon} />
+              ) : null
+            );
+          })
+      );
+    }),
+  ];
+  let items: MenuItem[] = [...menuFn(MenuData)];
+  const [menuItems, setMenuItems] = useState(items);
+  useEffect(() => {
+    MenuData.forEach((item) => {
+      console.log("item", item.path === "/category");
+
+      item.path === "/category" &&
+        (item.children = categoryList.map((item: any) => {
+          return {
+            key: "category/" + item.id,
+            // key: 'category',
+            title: item.title,
+            // icon: item.img,
+            icon: "site",
+            path: "/category",
+            permission: "user-management",
+          };
+        }));
+    });
+    items = menuFn(MenuData);
+    setMenuItems([...menuFn(MenuData)]);
+    console.log("appppppp MenuData", items);
+  }, [dispatch, categoryList]);
+
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [activeRoute, setActiveRoute] = useState(
@@ -62,8 +108,6 @@ const App: React.FC = () => {
   const navgate = useNavigate();
 
   const menuSelect = (a: any) => {
-    console.log("a,key", a);
-
     navgate(a.key);
 
     setActiveRoute(deepQuery(routeData, a.key, "key"));
@@ -87,7 +131,7 @@ const App: React.FC = () => {
           theme="dark"
           defaultSelectedKeys={[pathname.substring(1)]}
           mode="inline"
-          items={items}
+          items={menuItems}
           onSelect={menuSelect}
         />
       </Sider>

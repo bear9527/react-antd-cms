@@ -2,7 +2,6 @@ import {
   Space,
   Form,
   Input,
-  Select,
   UploadFile,
   Button,
   Popconfirm,
@@ -89,11 +88,10 @@ const Resource = () => {
     },
   ];
 
-
   const getDate = async () => {
     try {
       const res = await getAllCategory({
-        cate_id: 0
+        cate_id: 0,
       });
       if (res.data) {
         cateState.list = [...res.data];
@@ -107,14 +105,9 @@ const Resource = () => {
 
   useEffect(() => {
     // getDate();
-    dispatch(getTopCateList() as any)
-    console.log('categoryList',categoryList);
+    dispatch(getTopCateList() as any);
     setCateState({ list: [...categoryList] });
   }, [dispatch]);
-  // const getCateListHandler = () => {
-  //   dispatch(getTopCateList());
-  // };
-
 
   // 表格逻辑结束
 
@@ -316,7 +309,9 @@ const Resource = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" disabled={checkedIdList.length == 0}>批量删除</Button>
+            <Button type="primary" disabled={checkedIdList.length == 0}>
+              批量删除
+            </Button>
           </Popconfirm>
         </Space>
       </BaseTable>

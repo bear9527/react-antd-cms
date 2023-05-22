@@ -59,7 +59,7 @@ const router = [
       {
         title: 'category',
         icon: '',
-        path: '/category',
+        path: '/category?/:id',
         key: 'category',
         component: lazy(() => import('../views/Category')),
         mate:{

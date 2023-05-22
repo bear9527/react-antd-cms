@@ -83,3 +83,11 @@ interface ResponseDate {
   date: any
 }
 type Popconfirm = any
+
+interface CategoryItem {
+  key: number | string,
+  title: string,
+  icon: string,
+  path: string,
+  permission: string
+}
