@@ -28,11 +28,11 @@ import { getTopCateList } from "../../store/modules/categoryStore";
 interface DataType {
   id: string;
   title: string;
-  alias: string;
+  description: string;
   // name: string;
-  description: number;
+  // description: number;
   img: string;
-  cate_id: number;
+  categoryId: number;
 }
 
 const Resource = () => {
@@ -56,8 +56,8 @@ const Resource = () => {
     },
     {
       title: "description",
-      dataIndex: "alias",
-      key: "alias",
+      dataIndex: "description",
+      key: "description",
     },
     {
       title: "img",
@@ -91,7 +91,7 @@ const Resource = () => {
   const getDate = async () => {
     try {
       const res = await getAllCategory({
-        cate_id: 0,
+        categoryId: 0,
       });
       if (res.data) {
         cateState.list = [...res.data];
@@ -144,7 +144,7 @@ const Resource = () => {
     },
     {
       label: "描述",
-      name: "alias",
+      name: "description",
       attrs: { rules: [{ required: true, message: "请输入!" }] },
       component: <Input allowClear placeholder="请输入描述" />,
     },
@@ -212,8 +212,8 @@ const Resource = () => {
     });
     form.setFieldsValue({
       title: record.title,
-      alias: record.alias,
-      cate_id: 0,
+      description: record.description,
+      categoryId: 0,
       img: record.img,
     });
   };

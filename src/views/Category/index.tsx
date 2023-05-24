@@ -8,36 +8,48 @@ import {
   Popconfirm,
   message,
 } from "antd";
-import { ColumnsType } from "antd/es/table";
-import React, { useEffect, useState, useRef } from "react";
 import {
-  getAllCategory,
   editCategory,
-  addCategory,
   deleteCategory,
   batchDeleteCategory,
 } from "@/api/category";
+
+import {
+  getArticleList,
+  addArticle,
+  editArticle
+} from "@/api/article";
+
+import React, { useEffect, useState, useRef } from "react";
+import { ColumnsType } from "antd/es/table";
+import { useParams } from "react-router-dom";
 import BaseTable from "@/components/base/BaseTable";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
-import "./Category.scss";
 import BaseTitle from "@/components/base/BaseTitle";
+import "./Category.scss";
+import { useSelector } from "react-redux";
 const { Option } = Select;
 
 interface DataType {
   id: string;
   title: string;
-  alias: string;
-  // name: string;
+  content: string;
   description: number;
-  img: string;
-  cate_id: number;
+  articlePic: string;
+  // categoryId: number;
 }
 
 const Category = () => {
+  const routerParam = useParams();
+
+  useEffect(() => {
+    getDate();
+  }, [routerParam.id]);
+
   // 表格逻辑开始
-  const [cateState, setCateState]: any = useState({
+  const [articleListState, setarticleListState]: any = useState({
     list: [],
   });
 
@@ -56,21 +68,21 @@ const Category = () => {
     },
     {
       title: "父分类ID",
-      dataIndex: "cate_id",
-      key: "cate_id",
+      dataIndex: "categoryId",
+      key: "categoryId",
     },
     {
       title: "description",
-      dataIndex: "alias",
-      key: "alias",
+      dataIndex: "description",
+      key: "description",
     },
     {
-      title: "img",
-      key: "img",
-      dataIndex: "img",
-      render: (_, { img }) => (
+      title: "articlePic",
+      key: "articlePic",
+      dataIndex: "articlePic",
+      render: (_, { articlePic }) => (
         <>
-          <img width={50} src={img} alt="" />
+          <img width={50} src={articlePic} alt="" />
         </>
       ),
     },
@@ -92,20 +104,17 @@ const Category = () => {
       ),
     },
   ];
-  const getDate = async () => {
+  const getDate = async (id = routerParam.id) => {
     try {
-      const res = await getAllCategory();
+      const res = await getArticleList({categoryId: id});
       if (res.data) {
-        cateState.list = [...res.data];
-        setCateState({ list: [...cateState.list] });
-        console.log("setCateList", cateState);
+        articleListState.list = [...res.data];
+        setarticleListState({ list: [...articleListState.list] });
+        console.log("setCateList", articleListState);
       }
     } catch (error) {}
   };
 
-  useEffect(() => {
-    getDate();
-  }, []);
 
   // 表格逻辑结束
 
@@ -121,7 +130,7 @@ const Category = () => {
   const uploadChange = (fileList: UploadFile[]) => {
     if (!fileList || fileList.length === 0) {
       form.setFieldsValue({
-        img: "",
+        articlePic: "",
       });
       return;
     }
@@ -129,10 +138,11 @@ const Category = () => {
       item.url ? item.url : item.response.url
     )[0];
     form.setFieldsValue({
-      img: arr,
+      articlePic: arr,
     });
   };
 
+  const { categoryList } = useSelector((state: any) => state.categoryStore);
   const [formFields, setFormFields] = useState([
     {
       label: "标题",
@@ -142,37 +152,22 @@ const Category = () => {
     },
     {
       label: "描述",
-      name: "alias",
+      name: "description",
       attrs: { rules: [{ required: true, message: "请输入!" }] },
       component: <Input allowClear placeholder="请输入描述" />,
     },
     {
-      label: "所属分类",
-      name: "cate_id",
-      attrs: {
-        rules: [{ required: true, message: "请选择所属分类!" }],
-      },
-      component: () => {
-        return (
-          <Select placeholder="请选择所属分类" allowClear>
-            {cateState.list.map((item: any) => {
-              return (
-                <Option value={item.id} key={item.id}>
-                  {item.title}
-                </Option>
-              );
-            })}
-          </Select>
-        );
-      },
+      label: "内容",
+      name: "content",
+      attrs: { rules: [{ required: true, message: "请输入!" }] },
+      component: <Input allowClear placeholder="请输入内容" />,
     },
     {
       label: "缩略图",
-      name: "img",
+      name: "articlePic",
       // attrs: {
       //   rules: [{ message: "请上传缩略图!" }],
       // },
-      shouldUpdate: true,
       component: () => {
         console.log("upload fileList", fileListState);
         console.log("upload infoRef.current", infoRef.current);
@@ -208,12 +203,12 @@ const Category = () => {
       });
       return;
     }
-    record.img &&
+    record.articlePic &&
       fileListState.push({
         uid: "-1",
         name: "xxx",
         status: "done",
-        url: record.img,
+        url: record.articlePic,
       });
     setFileListState([...fileListState]);
     setModalState({
@@ -230,9 +225,9 @@ const Category = () => {
     });
     form.setFieldsValue({
       title: record.title,
-      alias: record.alias,
-      cate_id: record.cate_id,
-      img: record.img,
+      description: record.description,
+      content: record.content,
+      articlePic: record.articlePic,
     });
   };
 
@@ -254,8 +249,8 @@ const Category = () => {
   const onOk = async () => {
     const validated = await form.validateFields();
     const res: any = await (modalState.id
-      ? editCategory({ ...validated, id: modalState.id })
-      : addCategory({ ...validated }));
+      ? editArticle({ ...validated, id: modalState.id,categoryId: Number(routerParam.id) })
+      : addArticle({ ...validated,categoryId: Number(routerParam.id) }));
     if (res.status > 0) {
       return;
     } else {
@@ -305,7 +300,7 @@ const Category = () => {
   };
   return (
     <>
-      <BaseTitle title="分类">
+      <BaseTitle title="文章">
         <Button type="primary" ghost onClick={() => openModal()}>
           add
         </Button>
@@ -314,7 +309,7 @@ const Category = () => {
         rowSelection={{
           ...rowSelection,
         }}
-        dataSource={cateState.list}
+        dataSource={articleListState.list}
         columns={columns}
         rowKey={(record) => record.id}
         height="100%"
@@ -326,12 +321,14 @@ const Category = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" disabled={checkedIdList.length == 0}>批量删除</Button>
+            <Button type="primary" disabled={checkedIdList.length == 0}>
+              批量删除
+            </Button>
           </Popconfirm>
         </Space>
       </BaseTable>
       <BaseModal
-        title={modalState.id ? "编辑分类" : "新增分类"}
+        title={modalState.id ? "编辑文章" : "新增文章"}
         width={800}
         open={modalState.open}
         onOk={onOk}
