@@ -25,26 +25,22 @@ type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
   label: React.ReactNode,
   key: React.Key,
+  path: string,
   icon?: React.ReactNode,
-  children?: MenuItem[]
+  children?: MenuItem[],
+  parentkey?: string,
+  permission?: string
 ): MenuItem {
   return {
+    label,
     key,
+    path,
     icon,
     children,
-    label,
+    parentkey,
+    permission,
   } as MenuItem;
 }
-console.log("MenuData", MenuData);
-
-// items = itemsFn()
-
-// store.subscribe(() => {
-//   console.log('MenuData()',MenuData());
-
-// items = itemsFn()
-// });
-
 type ContextType = { activeRoute: any | null };
 
 const App: React.FC = () => {
@@ -62,15 +58,20 @@ const App: React.FC = () => {
       return getItem(
         item.title,
         item.key,
+        item.path,
         item.icon ? <SvgIcon iconName={item.icon} /> : null,
         item?.children &&
           item?.children.map((itemChildren: any) => {
             return getItem(
               itemChildren.title,
               itemChildren.key,
+              itemChildren.path,
               itemChildren.icon ? (
                 <SvgIcon iconName={itemChildren.icon} />
-              ) : null
+              ) : null,
+              itemChildren.children,
+              itemChildren.parentkey,
+              itemChildren.permission
             );
           })
       );
@@ -80,42 +81,48 @@ const App: React.FC = () => {
   const [menuItems, setMenuItems] = useState(items);
   useEffect(() => {
     MenuData.forEach((item) => {
-      console.log("item", item.path === "/category");
+      // console.log("item", item.path === "/category");
 
       item.path === "/category" &&
         (item.children = categoryList.map((item: any) => {
           return {
-            key: "category/" + item.id,
-            // key: 'category',
+            key: item.id,
             title: item.title,
-            // icon: item.img,
             icon: "site",
-            path: "/category",
+            path: "/category/" + item.id,
+            children: undefined,
+            parentkey: "category",
             permission: "user-management",
           };
         }));
     });
     items = menuFn(MenuData);
     setMenuItems([...menuFn(MenuData)]);
-    console.log("appppppp MenuData", items);
+    // console.log("appppppp MenuData", items);
   }, [dispatch, categoryList]);
 
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [activeRoute, setActiveRoute] = useState(
-    deepQuery(routeData, pathname, "path")
+    pathname.substring(1).split("/")
   );
   const navgate = useNavigate();
 
   const menuSelect = (a: any) => {
-    navgate(a.key);
-
-    setActiveRoute(deepQuery(routeData, a.key, "key"));
+    const path =
+      a.keyPath.length > 1 ? a.keyPath[1] + "/" + a.keyPath[0] : a.keyPath[0];
+    navgate(path);
+    setActiveRoute(a.keyPath);
   };
 
   useEffect(() => {
-    console.log("pathname", pathname);
-  }, []);
+    console.log(
+      "activeRoute",
+      menuItems,
+      pathname.substring(1).split("/"),
+      deepQuery(menuItems, pathname.substring(1), "key")
+    );
+  }, [menuItems]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -129,7 +136,8 @@ const App: React.FC = () => {
         </div>
         <Menu
           theme="dark"
-          defaultSelectedKeys={[pathname.substring(1)]}
+          defaultOpenKeys={activeRoute}
+          defaultSelectedKeys={activeRoute}
           mode="inline"
           items={menuItems}
           onSelect={menuSelect}

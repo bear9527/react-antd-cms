@@ -91,7 +91,7 @@ const Resource = () => {
   const getDate = async () => {
     try {
       const res = await getAllCategory({
-        categoryId: 0,
+        categoryId: 1,
       });
       if (res.data) {
         cateState.list = [...res.data];
@@ -213,7 +213,7 @@ const Resource = () => {
     form.setFieldsValue({
       title: record.title,
       description: record.description,
-      categoryId: 0,
+      categoryId: 1,
       img: record.img,
     });
   };
@@ -236,8 +236,8 @@ const Resource = () => {
   const onOk = async () => {
     const validated = await form.validateFields();
     const res: any = await (modalState.id
-      ? editCategory({ ...validated, id: modalState.id })
-      : addCategory({ ...validated }));
+      ? editCategory({ ...validated, id: modalState.id, categoryId: 1 })
+      : addCategory({ ...validated, categoryId: 1  }));
     if (res.status > 0) {
       return;
     } else {

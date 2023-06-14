@@ -27,11 +27,9 @@ import BaseTable from "@/components/base/BaseTable";
 import BaseModal from "@/components/base/BaseModal";
 import BaseForm from "@/components/base/BaseForm";
 import BaseUpload from "@/components/baseItems/BaseUpload";
+import RichText from "@/components/baseItems/RichText";
 import BaseTitle from "@/components/base/BaseTitle";
 import "./Category.scss";
-import { useSelector } from "react-redux";
-const { Option } = Select;
-
 interface DataType {
   id: string;
   title: string;
@@ -110,12 +108,9 @@ const Category = () => {
       if (res.data) {
         articleListState.list = [...res.data];
         setarticleListState({ list: [...articleListState.list] });
-        console.log("setCateList", articleListState);
       }
     } catch (error) {}
   };
-
-
   // 表格逻辑结束
 
   // 表单逻辑开始
@@ -142,7 +137,14 @@ const Category = () => {
     });
   };
 
-  const { categoryList } = useSelector((state: any) => state.categoryStore);
+  const contentChange = (content:string)=>{
+    console.log('contentChange',content);
+    
+    form.setFieldsValue({
+      content: content,
+    });
+  }
+
   const [formFields, setFormFields] = useState([
     {
       label: "标题",
@@ -157,25 +159,30 @@ const Category = () => {
       component: <Input allowClear placeholder="请输入描述" />,
     },
     {
-      label: "内容",
-      name: "content",
-      attrs: { rules: [{ required: true, message: "请输入!" }] },
-      component: <Input allowClear placeholder="请输入内容" />,
-    },
-    {
       label: "缩略图",
       name: "articlePic",
       // attrs: {
       //   rules: [{ message: "请上传缩略图!" }],
       // },
       component: () => {
-        console.log("upload fileList", fileListState);
-        console.log("upload infoRef.current", infoRef.current);
         return (
           <BaseUpload
             multiple={true}
             fileList={infoRef.current}
             onChange={uploadChange}
+          />
+        );
+      },
+    },
+    {
+      label: "内容",
+      name: "content",
+      attrs: { rules: [{ required: true, message: "请输入!" }] },
+      component:  () => {
+        return (
+          <RichText
+            content={form.getFieldValue('content')}
+            onChange={contentChange}
           />
         );
       },
@@ -229,6 +236,8 @@ const Category = () => {
       content: record.content,
       articlePic: record.articlePic,
     });
+    console.log('form',form.getFieldValue('content'));
+    
   };
 
   const layout = {
@@ -281,16 +290,9 @@ const Category = () => {
       getDate();
     }
   };
-  // rowSelection object indicates the need for row selection
-  // 表单逻辑开始
   const [checkedIdList, setCheckedIdList] = useState<React.Key[]>([]);
   const rowSelection = {
     onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
-      console.log(
-        `selectedRowKeys: ${typeof selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
       setCheckedIdList(selectedRowKeys);
     },
     getCheckboxProps: (record: DataType) => ({
@@ -329,7 +331,7 @@ const Category = () => {
       </BaseTable>
       <BaseModal
         title={modalState.id ? "编辑文章" : "新增文章"}
-        width={800}
+        width={'100%'}
         open={modalState.open}
         onOk={onOk}
         onCancel={onCancel}

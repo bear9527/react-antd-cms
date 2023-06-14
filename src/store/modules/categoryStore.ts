@@ -39,7 +39,7 @@ const getTopCateList = () => {
     // }
       return async (dispatch:any) => {
         const res = await getAllCategory({
-          categoryId: 0
+          categoryId: 1
         });
         dispatch(setCategoryList(res.data))
       }
